@@ -1,0 +1,50 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = "file:./dev.db"
+}
+
+model RFQ {
+  id                     String        @id @default(uuid())
+  name                   String
+  bidStartAt             DateTime
+  bidCloseAt             DateTime
+  forcedCloseAt          DateTime
+  pickupDate             DateTime
+  triggerWindowMinutes   Int
+  extensionDurationMinutes Int
+  triggerType            String // "ANY_BID", "ANY_RANK_CHANGE", "L1_RANK_CHANGE"
+  createdAt              DateTime      @default(now())
+  updatedAt              DateTime      @updatedAt
+
+  bids                   Bid[]
+  activityLogs           ActivityLog[]
+}
+
+model Bid {
+  id                 String   @id @default(uuid())
+  rfqId              String
+  supplierName       String
+  freightCharges     Float
+  originCharges      Float
+  destinationCharges Float
+  totalAmount        Float
+  transitTime        String
+  validityDate       DateTime
+  createdAt          DateTime @default(now())
+
+  rfq RFQ @relation(fields: [rfqId], references: [id])
+}
+
+model ActivityLog {
+  id          String   @id @default(uuid())
+  rfqId       String
+  activityType String   // "BID_SUBMISSION", "TIME_EXTENSION"
+  description String
+  createdAt   DateTime @default(now())
+
+  rfq RFQ @relation(fields: [rfqId], references: [id])
+}
